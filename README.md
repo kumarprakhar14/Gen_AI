@@ -1,4 +1,3 @@
-```markdown
 # 🧠 Generative AI with TensorFlow - Learning Journey
 
 A comprehensive, hands-on exploration of Generative AI built from first principles. This repository documents my journey from TensorFlow basics to building state-of-the-art generative models (VAEs, GANs, Transformers, and Music Generation).
