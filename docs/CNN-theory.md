@@ -152,13 +152,13 @@ This filter detects vertical edges!
 
 ```
 Input Image (5×5):        Filter (3×3):
-┌─────────────────┐       ┌─────────┐
+┌────────────────┐       ┌─────────┐
 │10 10 10  0  0  │       │ 1  0 -1 │
 │10 10 10  0  0  │       │ 2  0 -2 │
 │10 10 10  0  0  │       │ 1  0 -1 │
 │10 10 10  0  0  │       └─────────┘
 │10 10 10  0  0  │
-└─────────────────┘
+└────────────────┘
 
 Step 1: Position filter at top-left
 ┌─────────┐
@@ -197,11 +197,11 @@ Output[0,1] = 30  ← Strong response! Edge detected!
 
 
 Output Feature Map (3×3):
-┌──────────┐
+┌─────────┐
 │ 0 30 30 │  ← High values = vertical edge detected!
 │ 0 30 30 │
 │ 0 30 30 │
-└──────────┘
+└─────────┘
 ```
 
 ### The Magic: Pattern Detection
@@ -217,11 +217,11 @@ Vertical Edge Detector:    Horizontal Edge Detector:
 └─────────┘                └─────────┘
 
 Blur Filter:               Sharpen Filter:
-┌─────────────┐            ┌─────────────┐
+┌────────────┐            ┌─────────┐
 │1/9 1/9 1/9 │            │ 0 -1  0 │
 │1/9 1/9 1/9 │            │-1  5 -1 │
 │1/9 1/9 1/9 │            │ 0 -1  0 │
-└─────────────┘            └─────────────┘
+└────────────┘            └─────────┘
 ```
 
 **Key Insight:** The network LEARNS optimal filters during training!
@@ -281,11 +281,11 @@ Dimension breakdown:
 **Visualization:**
 ```
 Input (28×28×1):        Feature Maps (26×26×32):
-┌───────────┐          ┌──────┐┌──────┐┌──────┐    ┌──────┐
-│           │          │Map 1 ││Map 2 ││Map 3 │... │Map 32│
-│   Input   │  ──────→ │Edges ││Corners││Curves│    │Other│
-│   Image   │          │      ││      ││      │    │     │
-└───────────┘          └──────┘└──────┘└──────┘    └──────┘
+┌───────────┐          ┌──────┐┌───────┐ ┌──────┐    ┌──────┐
+│           │          │Map 1 ││Map 2  │ │Map 3 │... │Map 32│
+│   Input   │  ──────→ │Edges ││Corners│ │Curves│    │Other │
+│   Image   │          │      ││       │ │      │    │      │
+└───────────┘          └──────┘└───────┘ └──────┘    └──────┘
                        Each map highlights different features!
 ```
 
@@ -515,13 +515,13 @@ Pooling = Reduce spatial dimensions, keep important information
 
 ```
 Input Feature Map (4×4):
-┌─────────────┐
+┌────────────┐
 │ 1  3│ 2  4 │
 │ 5  6│ 8  7 │
 ├─────┼──────┤  ← Divide into 2×2 regions
 │ 2  1│ 0  3 │
 │ 4  2│ 1  5 │
-└─────────────┘
+└────────────┘
 
 MaxPool (2×2):
 Take the MAX value from each 2×2 region
@@ -561,13 +561,13 @@ Exact position doesn't matter!
 
 ```
 Same input (4×4):
-┌─────────────┐
+┌────────────┐
 │ 1  3│ 2  4 │
 │ 5  6│ 8  7 │
 ├─────┼──────┤
 │ 2  1│ 0  3 │
 │ 4  2│ 1  5 │
-└─────────────┘
+└────────────┘
 
 AvgPool (2×2):
 Take the AVERAGE of each 2×2 region
@@ -579,10 +579,10 @@ Region 3:          Region 4:
 (2+1+4+2)/4=2.25   (0+3+1+5)/4=2.25
 
 Output (2×2):
-┌──────────┐
+┌─────────┐
 │3.75 5.25│
 │2.25 2.25│
-└──────────┘
+└─────────┘
 ```
 
 **MaxPool vs AvgPool:**
@@ -650,7 +650,7 @@ Every pixel connects to every neuron
 │Px 1│────│Neuron 1  │
 │Px 2│────│Neuron 2  │  ← All-to-all connections
 │... │────│...       │     No spatial meaning!
-│Px784───│Neuron 128│
+│Px784────│Neuron 128│
 └────┘    └──────────┘
 
 CNN:
@@ -927,13 +927,381 @@ Layer 1 Filters (Low-level):
 After training on MNIST, filters learn to detect:
 
 Filter 1:        Filter 2:        Filter 3:
-┌─────┐         ┌─────┐         ┌─────┐
-│ + + │         │─ ─ ─│         │ \ \ │
+┌─────┐         ┌─────┐          ┌─────┐
+│ + + │         │─ ─ ─│          │ \ \ │
 │ 0 0 │ Vertical│+ + +│Horizontal│\ \ \│Diagonal
-│ - - │ edge    │─ ─ ─│edge     │ \ \ │edge
-└─────┘         └─────┘         └─────┘
+│ - - │ edge    │─ ─ ─│edge      │ \ \ │edge
+└─────┘         └─────┘          └─────┘
 
 Filter 4:        Filter 5:
 ┌─────┐         ┌─────┐
 │+ 0 -│         │+ + +│
 │+ 0 -│Corner   │+ 0 0│Curve
+│+ 0 -│         │- - -│
+└─────┘         └─────┘
+
+These aren't programmed - they EMERGE from training!
+```
+
+### Layer 2 Filters (Mid-level):
+
+```
+Layer 2 combines Layer 1 features:
+
+Feature Map 1:           Feature Map 2:
+Detects "top curve"      Detects "bottom curve"
+    ⌒                        ⌣
+Used in: 0,6,8,9        Used in: 0,3,6,8,9
+
+Feature Map 3:           Feature Map 4:
+Detects "vertical line"  Detects "crossing lines"
+    |                        ╋
+Used in: 1,4,7          Used in: 4,5,7
+
+The network learns WHICH combinations matter!
+```
+
+### Layer 3+ (High-level):
+
+```
+Final layers combine everything:
+
+Neuron 1: "I activate when I see:"
+  ⌒ (top curve) + | (vertical) + ⌣ (bottom curve)
+  = Looks like digit "0"!
+
+Neuron 2: "I activate when I see:"
+  | (vertical line) + no curves
+  = Looks like digit "1"!
+
+Neuron 3: "I activate when I see:"
+  ⌒ (top curve) + ⌣ (bottom curve) + no vertical
+  = Looks like digit "3"!
+```
+
+### What Happens During Prediction
+
+```
+Input: Handwritten "7"
+   ╱
+  ╱
+ ╱
+
+Layer 1 Response:
+Filter 1 (vertical): Low activation ■□□□□ (weak)
+Filter 2 (horizontal): Medium ■■■□□ (top bar)
+Filter 3 (diagonal): HIGH! ■■■■■ (main stroke)
+Filter 4 (corner): Medium ■■■□□ (top right)
+
+Layer 2 Response:
+Map 1 (top bar): HIGH ■■■■□
+Map 2 (diagonal stroke): HIGH ■■■■■
+Map 3 (vertical): LOW □□□□□
+
+Final Layer:
+Neuron 0 (digit "0"): 0.01  (no loop)
+Neuron 1 (digit "1"): 0.05  (has line, but wrong angle)
+Neuron 2 (digit "2"): 0.02  (no curves)
+...
+Neuron 7 (digit "7"): 0.95  ← HIGHEST! ✓
+...
+
+Prediction: "7" with 95% confidence!
+```
+
+---
+
+<a id="summary"></a>
+## 🎯 Summary & Key Takeaways
+
+### The Core Principles
+
+```
+1. Convolution = Sliding window pattern detection
+2. Filters = Learnable feature detectors
+3. Pooling = Downsample while keeping important info
+4. Hierarchical = Low-level → Mid-level → High-level features
+5. Parameter Sharing = Same filter everywhere (efficient!)
+6. Translation Invariance = Object location doesn't matter
+```
+
+### Why CNNs Beat Dense Networks for Images
+
+| Problem | Dense Network | CNN Solution |
+|---------|--------------|--------------|
+| Spatial structure lost | Flattens to vector | Keeps 2D structure |
+| Too many parameters | 100K+ params | Parameter sharing → fewer params |
+| Not translation invariant | Learns each position separately | Same filter everywhere |
+| No hierarchical learning | Processes whole image at once | Builds features layer by layer |
+| Overfitting | Too many params for small dataset | Regularization via pooling |
+
+### The CNN Formula for Success
+
+```
+Input Image (28×28×1)
+      ↓
+[Conv → ReLU → Pool] × N  ← Feature extraction
+      ↓
+Flatten
+      ↓
+[Dense → ReLU] × M  ← Classification
+      ↓
+Output (Softmax)
+
+Where:
+- N = Number of conv blocks (typically 2-5)
+- M = Number of dense layers (typically 1-2)
+```
+
+### Parameter Count Breakdown
+
+```
+Example CNN for MNIST:
+
+Conv2D(32, 3×3):     32 × (3×3×1 + 1) =      320 params
+MaxPool(2×2):                              0 params (no learning!)
+Conv2D(64, 3×3):     64 × (3×3×32 + 1) = 18,496 params
+MaxPool(2×2):                              0 params
+Flatten:                                   0 params
+Dense(128):          1600 × 128         = 204,800 params
+Dense(10):           128 × 10           =   1,280 params
+                                          ─────────
+Total:                                    224,896 params
+
+Most parameters in final dense layer!
+Convolutional layers are very parameter-efficient.
+```
+
+### Expected Performance
+
+```
+Model Type          | Accuracy | Parameters | Training Time
+────────────────────|──────────|────────────|──────────────
+Logistic Regression | ~92%     | 7,850      | Fast
+Dense (2-layer)     | 95-97%   | 101,632    | Medium
+CNN (simple)        | 99%+     | 224,896    | Medium-Slow
+CNN (optimized)     | 99.5%+   | 1M+        | Slower
+
+The CNN accuracy jump (97% → 99%+) is SIGNIFICANT!
+Going from 97% to 99% means:
+- 97%: 3 errors per 100 images
+- 99%: 1 error per 100 images
+- 3× fewer errors!
+```
+
+### What You'll Notice Tomorrow
+
+When we code the CNN, you'll see:
+
+```python
+# 1. Input shape change
+Dense:  input_shape=(784,)      # Flattened
+CNN:    input_shape=(28,28,1)   # Spatial structure preserved!
+
+# 2. New layer types
+Conv2D(32, (3,3))    # Convolution with 32 filters
+MaxPooling2D((2,2))  # Downsample by 2×
+
+# 3. Flatten before dense layers
+Flatten()            # Convert 5×5×64 → 1600 vector
+
+# 4. Same ending
+Dense(128, 'relu')   # Still use dense layers at end
+Dense(10, 'softmax') # Still softmax for classification
+```
+
+### The Mental Model
+
+```
+Think of CNNs as:
+
+📷 Image → 🔍 Local Pattern Detectors → 📊 Feature Hierarchy → 🎯 Classification
+
+Or in cooking terms:
+Raw ingredients → Prep (chop, dice) → Combine → Final dish
+Raw pixels → Conv (detect features) → Pool (combine) → Dense (classify)
+
+Or in language:
+Letters → Words → Sentences → Meaning
+Pixels → Edges → Shapes → Object recognition
+```
+
+### Common Misconceptions Cleared
+
+```
+❌ "Convolution is just a fancy name for matrix multiplication"
+✅ It's a SLIDING window operation (different from full matrix mult)
+
+❌ "More filters = always better"
+✅ More filters = more capacity, but also more overfitting risk
+
+❌ "Pooling loses information, so it's bad"
+✅ Pooling loses EXACT position, keeps "was feature present?" (good!)
+
+❌ "CNNs only work for images"
+✅ They work for ANY spatial/sequential data (time series, audio, etc.)
+
+❌ "The network 'sees' like humans do"
+✅ It detects statistical patterns, not semantic understanding (yet!)
+```
+
+### The Intuition Test
+
+If you understand CNNs, you should be able to answer:
+
+1. **Why 3×3 filters?**
+   → Small enough to be efficient, large enough to capture local patterns
+
+2. **Why multiple layers?**
+   → Build hierarchy: edges → shapes → objects
+
+3. **Why pooling?**
+   → Reduce computation, add translation invariance, prevent overfitting
+
+4. **Why ReLU after Conv?**
+   → Add non-linearity (otherwise multiple conv = one conv)
+
+5. **Why flatten before dense layers?**
+   → Dense layers expect 1D input, CNN produces 3D (H×W×C)
+
+6. **Why same filter everywhere?**
+   → A cat ear is a cat ear, whether in corner or center!
+
+### What Makes a Good CNN?
+
+```
+Good CNN Design Principles:
+
+1. Start with small filters (3×3 or 5×5)
+2. Increase filter count as you go deeper (32 → 64 → 128)
+3. Pool after every 1-2 conv layers
+4. Use ReLU for conv layers, softmax for output
+5. Add dropout before final dense layer (prevent overfitting)
+6. Don't go too deep for simple problems (2-3 conv blocks enough for MNIST)
+```
+
+### Real-World CNN Applications
+
+```
+Image Classification:
+- Medical imaging (tumor detection)
+- Satellite imagery (land use classification)
+- Quality control (defect detection)
+
+Object Detection:
+- Self-driving cars (pedestrian detection)
+- Security (face recognition)
+- Retail (product recognition)
+
+Image Segmentation:
+- Medical (organ segmentation)
+- Autonomous vehicles (lane detection)
+- Agriculture (crop monitoring)
+
+And more:
+- Style transfer (artistic filters)
+- Image generation (GANs - coming soon!)
+- Super-resolution (upscaling images)
+```
+
+---
+
+## 🎓 Final Knowledge Check
+
+Before moving to coding, make sure you understand:
+
+### Conceptual Understanding
+- [ ] What convolution does (sliding window pattern detection)
+- [ ] Why filters are powerful (learn patterns, not pixels)
+- [ ] How pooling works (downsample via max/avg)
+- [ ] Why hierarchical features matter (edges → shapes → objects)
+- [ ] The difference between feature maps and filters
+
+### Technical Understanding
+- [ ] How to calculate output size: (Input - Filter) / Stride + 1
+- [ ] Why stride and padding affect output dimensions
+- [ ] What channels represent (depth of the tensor)
+- [ ] Why pooling has no parameters (no learning, just aggregation)
+- [ ] Parameter count: filters × (filter_size × input_channels + 1)
+
+### Practical Understanding
+- [ ] Why CNNs beat dense networks for images
+- [ ] When to use MaxPool vs AvgPool (max for most cases)
+- [ ] Why we need Flatten before Dense layers
+- [ ] How to design a simple CNN architecture
+- [ ] What accuracy improvement to expect (97% → 99%+)
+
+---
+
+## 🚀 What's Next?
+
+Tomorrow we'll code this! You'll:
+
+1. **Build your first CNN** in Keras (10 lines of code!)
+2. **Train on MNIST** and hit 99%+ accuracy
+3. **Visualize filters** and see what the network learned
+4. **Compare to your dense network** (side-by-side results)
+5. **Experiment** with different architectures
+
+The theory you learned today will make the code **trivially easy** to understand!
+
+---
+
+## 📚 Further Reading (Optional)
+
+If you want to go deeper:
+
+**Classic Papers:**
+- LeNet-5 (1998) - Yann LeCun: First successful CNN
+- AlexNet (2012) - Breakthrough in ImageNet
+- VGGNet (2014) - Simple, deep architecture
+- ResNet (2015) - Very deep networks with skip connections
+
+**Visualizations:**
+- CS231n Convolutional Neural Networks course (Stanford)
+- 3Blue1Brown: Neural Networks series (YouTube)
+- Distill.pub: Visual explanations of CNNs
+
+**Interactive:**
+- CNN Explainer (poloclub.github.io/cnn-explainer)
+- TensorFlow Playground (playground.tensorflow.org)
+
+---
+
+## 💡 The Big Picture
+
+```
+Phase 0 Journey So Far:
+
+Day 1: Tensors & Operations
+       ↓
+Day 2: Neural Networks from Scratch (Dense)
+       ↓
+Day 3: Keras (Easy Mode) + CNN Theory (Today!)
+       ↓
+Day 4: CNN Implementation (Tomorrow)
+       ↓
+Ready for Generative AI! 🎨
+
+You're building the foundation PROPERLY!
+Understanding > Memorizing
+```
+
+---
+
+**You're now ready to build CNNs!** 🎉
+
+Rest your brain, let this sink in, and tomorrow we'll watch accuracy jump from 97% → 99%+ with just a few new layer types!
+
+**Key Insight to Sleep On:**
+
+Dense networks: "Look at EVERY pixel with EVERY neuron"
+CNNs: "Look at LOCAL patterns, share knowledge everywhere"
+
+Simple change, massive improvement! 🚀
+
+---
+
+**End of CNN Theory Guide**
+
+*Tomorrow: We code! 💻*
