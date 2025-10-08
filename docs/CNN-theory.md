@@ -1263,8 +1263,8 @@ If you want to go deeper:
 - Distill.pub: Visual explanations of CNNs
 
 **Interactive:**
-- CNN Explainer (poloclub.github.io/cnn-explainer)
-- TensorFlow Playground (playground.tensorflow.org)
+- [CNN Explainer](https://poloclub.github.io/cnn-explainer)
+- [TensorFlow Playground](https://playground.tensorflow.org)
 
 ---
 
